@@ -1,8 +1,11 @@
 extends KinematicBody2D
 
 const SPEED = 250
-var prev_shooting = false
+var isShooting = false
+var bullet = preload("res://Scenes/player_bullet.xml")
+var bulletCount = 0
 var killed = false
+var bulletArray = []
 
 func _ready():
     set_fixed_process(true)
@@ -19,13 +22,32 @@ func _fixed_process(delta):
 	    direction.x += -SPEED
 	if Input.is_action_pressed("ui_right"):
 	    direction.x += SPEED
-	
 	set_pos(get_pos() + direction.normalized() * SPEED * delta)
 
 	### SHOOTING CODE ###
-	var shooting = Input.is_action_pressed("ui_space")
+	if Input.is_action_pressed("ui_select"):
+		if isShooting == false:
+			shoot()
+			isShooting = true
+	else:
+		isShooting = false
+		
+	#bulletarray code#
+	for bullet in bulletArray:
+		var bulletPos = get_node(bullet).get_pos()
+		bulletPos.x = bulletPos.x + 200 * delta
+		get_node(bullet).set_pos(bulletPos)
 	
-	if (shooting and not prev_shooting):
-		var player_bullet = preload("res://Scenes/player_bullet.tscn")
-		player_bullet.set_post(get_node("bullet_spawn").get_global_pos())
-		get_node("../..").add_child(player_bullet)
+func shoot():
+	print("shooting")
+	bulletCount = bulletCount + 1
+	var bullet_instance = bullet.instance()
+	bullet_instance.set_name("bullet"+str(bulletCount))
+	add_child(bullet_instance)
+	var bulletPos = get_node("bullet"+str(bulletCount)).get_pos()
+	var shipPos = get_node("bullet_spawn").get_pos()
+	bulletPos.y = shipPos.y
+	bulletPos.x = shipPos.x
+	get_node("bullet"+str(bulletCount)).set_pos(bulletPos)
+	bulletArray.append("bullet"+str(bulletCount))
+	print(bulletArray)
